@@ -1,10 +1,11 @@
 import tkinter as tk
+import time
 
-class Nodo:   
+class Nodo:
     def __init__(self, nombre, transacciones, puntero=None):
         self.nombre = nombre
         self.transacciones = transacciones
-        self.puntero = puntero
+        self.puntero: Nodo = puntero
     def add_nodo(self, nodo):
         if self.puntero is None:
             self.puntero = nodo
@@ -12,78 +13,73 @@ class Nodo:
             self.puntero.add_nodo(nodo)
 
 class Procesador:
-    def __init__(self, capacidad, cola=None):
+    cola: Nodo = None
+    def __init__(self, capacidad, cola: Nodo=None):
         self.capacidad = capacidad
         self.cola = cola
-    def agregar_nodo(self, nodo):
+    def agregar_nodo(self, nodo: Nodo):
         if self.cola is None:
             self.cola = nodo
         else:
             self.cola.add_nodo(nodo)
     def atender(self):
         if self.cola is None:
-            return
+            return -1, ''
         elif self.cola.transacciones <= self.capacidad:
             self.cola.transacciones = 0
             self.cola = self.cola.puntero
+            return 0, ''
         else:
             self.cola.transacciones -= self.capacidad
             ultimo = self.cola
             self.cola = self.cola.puntero
-            self.cola.add_nodo(ultimo)
+            #self.cola.add_nodo(ultimo)
+            return ultimo.transacciones, ultimo.nombre
 
 class GUI:
+    nodos = []
     def __init__(self, cpu):
+        self.procesador: Procesador = cpu
         self.root = tk.Tk()
-        self.canvas_width = 800
-        self.canvas_height = 400
-        self.canvas = tk.Canvas(self.root, width=self.canvas_width, height=self.canvas_height)
+        self.width = 800
+        self.height = 400
+        self.canvas = tk.Canvas(self.root, width=self.width, height=self.height)
         self.canvas.pack()
-        self.procesador = None
-        self.nodos = []
         self.crear_elementos()
-        self.cpu = cpu
-
-    def crear_nodo(self):
-        pass
-        # Crear los nodos como cuadrados azules alineados horizontalmente a la izquierda del procesador
-        nodo_lado = 40
-        nodo_espacio = 50
-        nodo_y = self.canvas_height // 2
-        if len(self.nodos)==0:
-            nodo_x = 50 + nodo_lado + nodo_espacio
-        else:
-            x1, y1, x2, y2 = self.canvas.coords(self.nodos[-1])
-            nodo_x = x1 + nodo_lado + nodo_espacio
-        nodo = self.canvas.create_rectangle(nodo_x, nodo_y - nodo_lado//2, nodo_x + nodo_lado, nodo_y + nodo_lado//2, fill='blue')
-        self.cpu.agregar_nodo(Nodo("nodo x", 5))
-        self.nodos.append(nodo)
-
     def crear_elementos(self):
-        # Crear el procesador como un círculo rojo en el centro del canvas
-        procesador_x = 50
-        procesador_y = self.canvas_height // 2
-        procesador_radio = 30
-        self.procesador = self.canvas.create_oval(procesador_x - procesador_radio, 
-                                                  procesador_y - procesador_radio,
-                                                  procesador_x + procesador_radio, 
-                                                  procesador_y + procesador_radio, 
-                                                  fill='red')
-        
-        # Crear los botones "Agregar nodo" y "Simular" en la parte inferior del canvas
+        self.ob_procesador = self.canvas.create_oval(50, (self.height//2)-20, 90, (self.height//2)+20, fill='red')
         boton_agregar_nodo = tk.Button(self.root, text="Agregar nodo")
         boton_agregar_nodo.pack(side=tk.LEFT, padx=10, pady=10)
         boton_agregar_nodo.config(command=self.crear_nodo)
         boton_simular = tk.Button(self.root, text="Simular")
         boton_simular.pack(side=tk.LEFT, padx=10, pady=10)
         boton_simular.config(command=self.simular)
-    
+    def crear_nodo(self, n="nuevo nodo", t=6):
+        nombre = n
+        transacciones = t
+        nodo = Nodo(nombre=nombre, transacciones=transacciones)
+        self.procesador.agregar_nodo(nodo)
+        if len(self.nodos) > 0:
+            x1, y1, x2, y2 = self.canvas.coords(self.nodos[-1])
+        else:
+            x1, y1 = 50, (self.height//2)-20
+        ob_nodo = self.canvas.create_rectangle(x1+40+20, y1, x1+20+40+40, y1+40, fill='blue')
+        self.nodos.append(ob_nodo)
+    def simular(self):
+        while self.procesador.cola is not None:
+            self.canvas.itemconfig(self.ob_procesador, fill='orange')
+            self.canvas.itemconfig(self.nodos[0], fill='green')
+            self.root.update()
+            time.sleep(1)
+            t, n = self.procesador.atender()
+            if t > 0:
+                self.crear_nodo(n, t)
+            self.canvas.delete(self.nodos[0])
+            self.nodos.pop(0)
+        self.canvas.itemconfig(self.ob_procesador, fill='red')
+
     def ejecutar(self):
         self.root.mainloop()
-
-    def simular(self):
-        pass
-
 if __name__=='__main__':
     procesador = Procesador(5)
     gui = GUI(procesador)
