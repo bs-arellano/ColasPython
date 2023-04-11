@@ -1,5 +1,6 @@
 import tkinter as tk
 import time
+import random
 
 class Nodo:
     def __init__(self, nombre, transacciones, puntero=None):
@@ -24,20 +25,23 @@ class Procesador:
             self.cola.add_nodo(nodo)
     def atender(self):
         if self.cola is None:
+            print("No quedan nodos")
             return -1, ''
         elif self.cola.transacciones <= self.capacidad:
+            print(f"Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones}")
             self.cola.transacciones = 0
             self.cola = self.cola.puntero
             return 0, ''
         else:
+            print(f"Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones} Capacidad: {self.capacidad}")
             self.cola.transacciones -= self.capacidad
             ultimo = self.cola
             self.cola = self.cola.puntero
-            #self.cola.add_nodo(ultimo)
             return ultimo.transacciones, ultimo.nombre
 
 class GUI:
     nodos = []
+    id = 1
     def __init__(self, cpu):
         self.procesador: Procesador = cpu
         self.root = tk.Tk()
@@ -54,7 +58,12 @@ class GUI:
         boton_simular = tk.Button(self.root, text="Simular")
         boton_simular.pack(side=tk.LEFT, padx=10, pady=10)
         boton_simular.config(command=self.simular)
-    def crear_nodo(self, n="nuevo nodo", t=6):
+    def crear_nodo(self, n="", t=0):
+        if t==0:
+            t=random.randint(1, 10)
+        if n=="":
+            n=f"nodo {self.id}"
+            self.id+=1
         nombre = n
         transacciones = t
         nodo = Nodo(nombre=nombre, transacciones=transacciones)
@@ -70,12 +79,17 @@ class GUI:
             self.canvas.itemconfig(self.ob_procesador, fill='orange')
             self.canvas.itemconfig(self.nodos[0], fill='green')
             self.root.update()
-            time.sleep(1)
+            if self.procesador.cola.transacciones>self.procesador.capacidad:
+                time.sleep(1)
+            else:
+                time.sleep(self.procesador.cola.transacciones/5)
             t, n = self.procesador.atender()
             if t > 0:
                 self.crear_nodo(n, t)
             self.canvas.delete(self.nodos[0])
             self.nodos.pop(0)
+            for nodo in self.nodos:
+                self.canvas.move(nodo, -60, 0)
         self.canvas.itemconfig(self.ob_procesador, fill='red')
 
     def ejecutar(self):
