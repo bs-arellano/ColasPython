@@ -7,6 +7,7 @@ class Nodo:
         self.nombre = nombre
         self.transacciones = transacciones
         self.puntero: Nodo = puntero
+        print(f"[Nuevo nodo] Nombre: {nombre}, transacciones: {transacciones}")
     def add_nodo(self, nodo):
         if self.puntero is None:
             self.puntero = nodo
@@ -28,12 +29,12 @@ class Procesador:
             print("No quedan nodos")
             return -1, ''
         elif self.cola.transacciones <= self.capacidad:
-            print(f"Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones}")
+            print(f"[Atendiendo] Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones}")
             self.cola.transacciones = 0
             self.cola = self.cola.puntero
             return 0, ''
         else:
-            print(f"Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones} Capacidad: {self.capacidad}")
+            print(f"[Atendiendo] Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones} Capacidad: {self.capacidad}")
             self.cola.transacciones -= self.capacidad
             ultimo = self.cola
             self.cola = self.cola.puntero
@@ -80,9 +81,9 @@ class GUI:
             self.canvas.itemconfig(self.nodos[0], fill='green')
             self.root.update()
             if self.procesador.cola.transacciones>self.procesador.capacidad:
-                time.sleep(1)
+                time.sleep(5)
             else:
-                time.sleep(self.procesador.cola.transacciones/5)
+                time.sleep(self.procesador.cola.transacciones)
             t, n = self.procesador.atender()
             if t > 0:
                 self.crear_nodo(n, t)
