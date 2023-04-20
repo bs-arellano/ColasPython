@@ -18,10 +18,10 @@ class Nodo:
 
 class Procesador:
     cola: Nodo = None
-    def __init__(self, capacidad, cola: Nodo=None):
+    def __init__(self, capacidad, cola=None):
         self.capacidad = capacidad
         self.cola = cola
-    def agregar_nodo(self, nodo: Nodo):
+    def agregar_nodo(self, nodo):
         if not isinstance(self.cola, Nodo):
             self.cola = nodo
         else:
@@ -75,7 +75,7 @@ class GUI:
         if t==0:
             t=random.randint(1, 10)
         if n=="":
-            n=f"nodo {self.id}"
+            n=f"nodo_{self.id}"
             self.id+=1
         nombre = n
         transacciones = t
@@ -132,5 +132,6 @@ class GUI:
         self.root.mainloop()
 if __name__=='__main__':
     procesador = Procesador(5)
+    procesador.agregar_nodo(procesador)
     gui = GUI(procesador)
     gui.ejecutar()
