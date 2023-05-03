@@ -1,7 +1,7 @@
 from procesador import Procesador
 from gui_factory import GUI_factory
 
-gui_id=1
+gui_id=2
 
 if __name__=='__main__':
     procesador = Procesador(5)

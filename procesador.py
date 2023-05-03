@@ -14,6 +14,12 @@ class Procesador:
         if self.cola is None:
             print("No quedan nodos")
             return -1, ''
+        else:
+            print(f"[Atendiendo] Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones}")
+            self.cola.transacciones = 0
+            self.cola = self.cola.puntero
+            return 0, ''
+        '''
         elif self.cola.transacciones <= self.capacidad:
             print(f"[Atendiendo] Nodo: {self.cola.nombre}, Transacciones: {self.cola.transacciones}")
             self.cola.transacciones = 0
@@ -25,3 +31,4 @@ class Procesador:
             ultimo = self.cola
             self.cola = self.cola.puntero
             return ultimo.transacciones, ultimo.nombre
+            '''
