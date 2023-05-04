@@ -25,11 +25,11 @@ class GUI:
         self.frame_tabla = tk.Frame(master=self.root)
         self.frame_tabla.grid(row=0, column=0)
         self.frame_semaforo = tk.Frame(master=self.root)
-        self.frame_semaforo.grid(row=0, column=1)
+        self.frame_semaforo.grid(row=1, column=0)
         self.frame_gantt = tk.Frame(master=self.root)
-        self.frame_gantt.grid(row=1, column=0)
+        self.frame_gantt.grid(row=2, column=0)
         self.frame_botones = tk.Frame(master=self.root)
-        self.frame_botones.grid(row=2, column=0)
+        self.frame_botones.grid(row=3, column=0)
         #Tabla
         self.tabla = ttk.Treeview(master=self.frame_tabla, columns=['proceso', 'llegada', 'rafaga', 'comienzo', 'final', 'retorno', 'espera'])
         self.tabla.column("#0", width=0, stretch=0)
@@ -60,9 +60,11 @@ class GUI:
     def crear_nodo(self, id, t0, raf):
         #Validacion
         if id=="" and t0=="" and raf=="":
-            pass
+            return
         t0 = int(t0)
         raf = int(raf)
+        if len(self.tareas)>0 and t0<self.tareas[-1][1]:
+            return
         #Limpia
         self.cpu.cola=None
         for i in self.tabla.get_children():
