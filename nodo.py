@@ -11,3 +11,11 @@ class Nodo:
             self.puntero = nodo
         else:
             self.puntero.add_nodo(nodo)
+
+class Proceso:
+    def __init__(self, nombre, t_llegada, prioridad, rafaga, bloqueo):
+        self.nombre=nombre
+        self.prioridad=prioridad
+        self.rafaga=rafaga
+        self.t_llegada=t_llegada
+        self.bloqueo=bloqueo
