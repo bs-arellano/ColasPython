@@ -125,6 +125,8 @@ class GUI:
             bloq = int(bloq)
         except:
             return
+        if len(self.cpu.dispatcher.nuevos)>0 and t0<sorted(self.cpu.dispatcher.nuevos, key=lambda x:x.llegada)[-1].llegada[0]:
+            return
         p = Proceso(id,t0,pr,raf,bloq)
         self.cpu.agregar_proceso(p)
 
@@ -132,7 +134,12 @@ class GUI:
         t=0
         while self.cpu.cola!=None or len(self.cpu.dispatcher.nuevos)>0 or len(self.cpu.dispatcher.listos)>0 or len(self.cpu.dispatcher.bloqueados)>0:
             p=self.cpu.atender(t)
-            time.sleep(0.1)
+            if self.cpu.cola is None:
+                self.canvas_semaforo.itemconfig(self.semaforo, fill="green")
+            else:
+                self.canvas_semaforo.itemconfig(self.semaforo, fill="red")
+            self.canvas_semaforo.update()
+            time.sleep(1)
             t+=1
         print("Resultados")
         for i, p in enumerate(self.cpu.dispatcher.terminados):
