@@ -1,4 +1,4 @@
-from procesador import Procesador, Proceso
+from procesador import Procesador, Proceso, Dispatcher
 import tkinter as tk
 from tkinter import ttk
 import threading
@@ -11,6 +11,7 @@ class GUI:
         self.height=500
         self.rows=1
         self.t_range=40
+        self.speed=4
         #objetos
         self.simulacion = threading.Thread(target=self.simular)
         self.root = tk.Tk()
@@ -66,6 +67,9 @@ class GUI:
         #Boton Simular
         boton_simular = tk.Button(self.frame_botones, text="Simular", command=self.simulacion.start)
         boton_simular.pack()
+        #Boton Limpiar
+        boton_limpiar = tk.Button(self.frame_botones, text="Limpiar", command=self.limpiar)
+        boton_limpiar.pack()
 
     def ventana_datos(self):
         #Ventana emergente
@@ -139,7 +143,7 @@ class GUI:
             else:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="red")
             self.canvas_semaforo.update()
-            time.sleep(1)
+            time.sleep(1/self.speed)
             t+=1
         print("Resultados")
         for i, p in enumerate(self.cpu.dispatcher.terminados):
@@ -147,9 +151,19 @@ class GUI:
                 print(p)
                 self.tabla.insert(parent="", index="end", values=(p.nombre, p.llegada[0], p.prioridad, p.rafaga[0], p.comienzo, p.final, p.retorno, p.espera, p.bloqueo[0]))
                 self.rows+=1
+                self.dibujar_tarea(i, p.nombre, p.llegada[0], p.comienzo[0], 'red')
                 if len(p.comienzo)>1:
                     for j in range(len(p.comienzo)):
                         self.dibujar_tarea(i, p.nombre, p.comienzo[j], p.comienzo[j]+p.rafaga[j+1], 'green')
                 else:
                     self.dibujar_tarea(i, p.nombre, p.comienzo[0], p.comienzo[0]+p.rafaga[0], 'green')
             self.dibujar_diagrama
+
+    def limpiar(self):
+        self.cpu.dispatcher = Dispatcher()
+        self.cpu.cola=None
+        for i in self.tabla.get_children():
+            self.tabla.delete(i)
+        self.canvas_gantt.delete('all')
+        self.rows=1
+        self.dibujar_diagrama()
