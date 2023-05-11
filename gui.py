@@ -1,6 +1,9 @@
+from procesador import Procesador, Proceso
 import tkinter as tk
 from tkinter import ttk
-from cpu import Procesador, Proceso
+import threading
+import time
+
 class GUI:
     def __init__(self, cpu: Procesador):
         #constantes
@@ -9,6 +12,7 @@ class GUI:
         self.rows=1
         self.t_range=40
         #objetos
+        self.simulacion = threading.Thread(target=self.simular)
         self.root = tk.Tk()
         self.root.title("Prioridades")
         self.cpu=cpu
@@ -60,7 +64,7 @@ class GUI:
         boton_agregar_nodo = tk.Button(self.frame_botones, text="Agregar nodo", command=self.ventana_datos)
         boton_agregar_nodo.pack()
         #Boton Simular
-        boton_simular = tk.Button(self.frame_botones, text="Simular", command=self.simular)
+        boton_simular = tk.Button(self.frame_botones, text="Simular", command=self.simulacion.start)
         boton_simular.pack()
 
     def ventana_datos(self):
@@ -100,35 +104,45 @@ class GUI:
             self.canvas_gantt.create_line(x, y0, x, y1)
             self.canvas_gantt.create_text(x+10, y0+10, text=i)
 
-    def dibujar_tarea(self, i, nombre, llegada, espera, final):
+    def dibujar_tarea(self, i, nombre, llegada, final, color):
         x0=10+((self.width-20)//self.t_range)*llegada
-        x1=10+((self.width-20)//self.t_range)*espera
-        x2=10+((self.width-20)//self.t_range)*final
+        x1=10+((self.width-20)//self.t_range)*final
         y0=(((self.height//2)//self.rows)*(i+1))-10
-        self.canvas_gantt.create_rectangle(x0,y0,x1,y0+20,fill='red')
-        self.canvas_gantt.create_rectangle(x1,y0,x2,y0+20,fill='green')
+        self.canvas_gantt.create_rectangle(x0,y0,x1,y0+20,fill=color)
         self.canvas_gantt.create_text(x0+10, y0+10, text=nombre)
 
     def ejecutar(self):
         self.root.mainloop()
 
-    def crear_nodo(self, id, t0, prioridad, raf, bloq):
+    def crear_nodo(self, id, t0, pr, raf, bloq):
         #Validacion
-        if id=="" or t0=="" or prioridad=="" or raf=="" or bloq=="":
+        if id=="" or t0=="" or pr=="" or raf=="" or bloq=="":
             return
         try:
             t0 = int(t0)
-            prioridad=int(prioridad)
+            pr=int(pr)
             raf = int(raf)
             bloq = int(bloq)
         except:
             return
-        if self.cpu.dispatcher.listos()>0 and t0<self.cpu.dispatcher.peek().t_llegada:
-            return
-        #Crea proceso
-        proceso = Proceso(id,t0,prioridad,raf,bloq)
-        self.cpu.agregar_proceso(proceso)
-        self.tabla.insert(parent="", index="end", values=(id,t0, prioridad, raf,"","","","",bloq))
+        p = Proceso(id,t0,pr,raf,bloq)
+        self.cpu.agregar_proceso(p)
 
     def simular(self):
-        pass
+        t=0
+        while self.cpu.cola!=None or len(self.cpu.dispatcher.nuevos)>0 or len(self.cpu.dispatcher.listos)>0 or len(self.cpu.dispatcher.bloqueados)>0:
+            p=self.cpu.atender(t)
+            time.sleep(0.1)
+            t+=1
+        print("Resultados")
+        for i, p in enumerate(self.cpu.dispatcher.terminados):
+            if p is not None:
+                print(p)
+                self.tabla.insert(parent="", index="end", values=(p.nombre, p.llegada[0], p.prioridad, p.rafaga[0], p.comienzo, p.final, p.retorno, p.espera, p.bloqueo[0]))
+                self.rows+=1
+                if len(p.comienzo)>1:
+                    for j in range(len(p.comienzo)):
+                        self.dibujar_tarea(i, p.nombre, p.comienzo[j], p.comienzo[j]+p.rafaga[j+1], 'green')
+                else:
+                    self.dibujar_tarea(i, p.nombre, p.comienzo[0], p.comienzo[0]+p.rafaga[0], 'green')
+            self.dibujar_diagrama
