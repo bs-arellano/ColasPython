@@ -12,12 +12,14 @@ class GUI:
         self.rows=1
         self.t_range=40
         self.speed=4
+        self.t = 0
         #objetos
-        self.simulacion = threading.Thread(target=self.simular)
+        self.simulaciones = []
+        self.simulaciones.append(threading.Thread(target=self.simular))
+        self.procesos = []
         self.root = tk.Tk()
-        self.root.title("Prioridades")
+        self.root.title("Round Robin")
         self.cpu=cpu
-        #self.root.resizable(0,0)
         self.crear_elementos()
         
     def crear_elementos(self):
@@ -31,14 +33,12 @@ class GUI:
         self.frame_botones = tk.Frame(master=self.root)
         self.frame_botones.grid(row=3, column=0)
         #Tabla
-        self.tabla = ttk.Treeview(master=self.frame_tabla, columns=['proceso', 'llegada', 'prioridad', 'rafaga', 'comienzo', 'final', 'retorno', 'espera', 'bloqueo'])
+        self.tabla = ttk.Treeview(master=self.frame_tabla, columns=['proceso', 'llegada', 'rafaga', 'comienzo', 'final', 'retorno', 'espera'])
         self.tabla.column("#0", width=0, stretch=0)
         self.tabla.heading(column='proceso', text="Proceso")
         self.tabla.column('proceso', width=self.width//8, stretch=False)
         self.tabla.heading(column='llegada', text="Tiempo de llegada")
         self.tabla.column('llegada', width=self.width//8, stretch=False)
-        self.tabla.heading(column='prioridad', text="Prioridad")
-        self.tabla.column('prioridad', width=self.width//8, stretch=False)
         self.tabla.heading(column='rafaga', text="Rafaga")
         self.tabla.column('rafaga', width=self.width//8, stretch=False)
         self.tabla.heading(column='comienzo', text="Tiempo de comienzo")
@@ -49,8 +49,6 @@ class GUI:
         self.tabla.column('retorno', width=self.width//8, stretch=False)
         self.tabla.heading(column='espera', text="Tiempo de espera")
         self.tabla.column('espera', width=self.width//8, stretch=False)
-        self.tabla.heading(column='bloqueo', text="Bloqueo")
-        self.tabla.column('bloqueo', width=self.width//8, stretch=False)
         self.tabla.pack()
         #Semaforo
         self.canvas_semaforo = tk.Canvas(master=self.frame_semaforo, width=100, height=100)
@@ -65,8 +63,15 @@ class GUI:
         boton_agregar_nodo = tk.Button(self.frame_botones, text="Agregar nodo", command=self.ventana_datos)
         boton_agregar_nodo.pack()
         #Boton Simular
-        boton_simular = tk.Button(self.frame_botones, text="Simular", command=self.simulacion.start)
+        lamda_simular = lambda: self.simulaciones[-1].start() if len(self.procesos)>0 else None
+        boton_simular = tk.Button(self.frame_botones, text="Simular", command=lamda_simular)
         boton_simular.pack()
+        #Boton Reiniciar
+        boton_reiniciar = tk.Button(self.frame_botones, text="Reiniciar", command=self.reiniciar)
+        boton_reiniciar.pack()
+        #Boton Bloquear
+        boton_bloquear = tk.Button(self.frame_semaforo, text="Bloquear", command=lambda: self.cpu.bloquear(self.t))
+        boton_bloquear.pack()
         #Boton Limpiar
         boton_limpiar = tk.Button(self.frame_botones, text="Limpiar", command=self.limpiar)
         boton_limpiar.pack()
@@ -75,22 +80,20 @@ class GUI:
         #Ventana emergente
         data_window=tk.Toplevel(master=self.root)
         data_window.geometry("300x300")
+        #ID
         tk.Label(data_window, text="Id del nodo").pack()
         id_input=tk.Entry(master=data_window)
         id_input.pack()
+        #Llegada
         tk.Label(master=data_window, text="Tiempo de llegada").pack()
         t_in_input=tk.Entry(master=data_window)
         t_in_input.pack()
-        tk.Label(data_window, text="Prioridad").pack()
-        prioridad_input=tk.Entry(master=data_window)
-        prioridad_input.pack()
+        #Rafaga
         tk.Label(master=data_window, text="Rafaga").pack()
         raf_input=tk.Entry(master=data_window)
         raf_input.pack()
-        tk.Label(master=data_window, text="Bloqueo").pack()
-        bloq_input=tk.Entry(master=data_window)
-        bloq_input.pack()
-        tk.Button(master=data_window, text="Guardar datos", command=lambda: [self.crear_nodo(id_input.get(), t_in_input.get(), prioridad_input.get(), raf_input.get(), bloq_input.get()), data_window.destroy()]).pack()
+        #Guardar
+        tk.Button(master=data_window, text="Guardar datos", command=lambda: [self.crear_nodo(id_input.get(), t_in_input.get(), raf_input.get()), data_window.destroy()]).pack()
 
     def dibujar_diagrama(self):
         # Dibuja la cuadricula horizontal
@@ -111,59 +114,88 @@ class GUI:
     def dibujar_tarea(self, i, nombre, llegada, final, color):
         x0=10+((self.width-20)//self.t_range)*llegada
         x1=10+((self.width-20)//self.t_range)*final
-        y0=(((self.height//2)//self.rows)*(i+1))-10
+        y0=(((self.height//4)//self.rows)*(i+1))-10
         self.canvas_gantt.create_rectangle(x0,y0,x1,y0+20,fill=color)
         self.canvas_gantt.create_text(x0+10, y0+10, text=nombre)
 
     def ejecutar(self):
         self.root.mainloop()
 
-    def crear_nodo(self, id, t0, pr, raf, bloq):
+    def crear_nodo(self, id, t0, raf):
         #Validacion
-        if id=="" or t0=="" or pr=="" or raf=="" or bloq=="":
+        if id=="" or t0=="" or raf=="":
             return
         try:
             t0 = int(t0)
-            pr=int(pr)
             raf = int(raf)
-            bloq = int(bloq)
         except:
             return
-        if len(self.cpu.dispatcher.nuevos)>0 and t0<sorted(self.cpu.dispatcher.nuevos, key=lambda x:x.llegada)[-1].llegada[0]:
+        if len(self.cpu.dispatcher.nuevos)>0 and t0<sorted(self.cpu.dispatcher.nuevos, key=lambda x:x.llegada[0])[-1].llegada[0]:
             return
-        p = Proceso(id,t0,pr,raf,bloq)
+        #Crea el proceso y lo añade a CPU
+        p = Proceso(id,t0,raf)
+        self.procesos.append(p)
         self.cpu.agregar_proceso(p)
 
     def simular(self):
-        t=0
+        self.t=0
+        #Si hay procesos sin finalizar
         while self.cpu.cola!=None or len(self.cpu.dispatcher.nuevos)>0 or len(self.cpu.dispatcher.listos)>0 or len(self.cpu.dispatcher.bloqueados)>0:
-            p=self.cpu.atender(t)
+            self.cpu.atender(self.t)
+            self.actualizar()
             if self.cpu.cola is None:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="green")
             else:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="red")
             self.canvas_semaforo.update()
             time.sleep(1/self.speed)
-            t+=1
-        print("Resultados")
-        for i, p in enumerate(self.cpu.dispatcher.terminados):
-            if p is not None:
-                print(p)
-                self.tabla.insert(parent="", index="end", values=(p.nombre, p.llegada[0], p.prioridad, p.rafaga[0], p.comienzo, p.final, p.retorno, p.espera, p.bloqueo[0]))
-                self.rows+=1
-                self.dibujar_tarea(i, p.nombre, p.llegada[0], p.comienzo[0], 'red')
-                if len(p.comienzo)>1:
-                    for j in range(len(p.comienzo)):
-                        self.dibujar_tarea(i, p.nombre, p.comienzo[j], p.comienzo[j]+p.rafaga[j+1], 'green')
-                else:
-                    self.dibujar_tarea(i, p.nombre, p.comienzo[0], p.comienzo[0]+p.rafaga[0], 'green')
-            self.dibujar_diagrama
+            self.t+=1
 
-    def limpiar(self):
+    def reiniciar(self):
+        #Resetea CPU
         self.cpu.dispatcher = Dispatcher()
         self.cpu.cola=None
+        for p in self.procesos:
+            p.ejecutada = []
+            p.comienzo = []
+            p.final = "-"
+            p.retorno = "-"
+            p.espera= "-"
+            self.cpu.agregar_proceso(p)
+        #Borra tabla
         for i in self.tabla.get_children():
             self.tabla.delete(i)
+        #Borra gantt
         self.canvas_gantt.delete('all')
         self.rows=1
         self.dibujar_diagrama()
+        #Termina hilo
+        if self.simulaciones[-1].is_alive():
+            self.simulaciones[-1].join()
+        self.simulaciones.append(threading.Thread(target=self.simular))
+    
+    def actualizar(self):
+        #Borra tabla
+        for i in self.tabla.get_children():
+            self.tabla.delete(i)
+        #Borra gantt
+        #self.canvas_gantt.delete('all')
+        self.rows=len(self.procesos)
+        #self.dibujar_diagrama()
+        #Actualiza
+        for i, p in enumerate(self.procesos):
+            if len(p.llegada)<=0:
+                continue
+            self.tabla.insert(parent="", index="end", values=[p.nombre, p.llegada[0], p.rafaga, p.comienzo, p.final, p.retorno, p.espera])
+            if self.cpu.cola is p:
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'green')
+            elif self.cpu.dispatcher.nuevos.__contains__(p):
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'blue')
+            elif self.cpu.dispatcher.listos.__contains__(p):
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'yellow')
+            elif self.cpu.dispatcher.bloqueados.__contains__(p):
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'red')
+
+    def limpiar(self):
+        self.procesos = []
+        self.reiniciar()

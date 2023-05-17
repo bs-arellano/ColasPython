@@ -9,22 +9,23 @@ class Dispatcher:
         print(f"Agregado {proceso}")
         self.nuevos.append(proceso)
     def get(self, t)->Proceso:
+        #Mueve los procesos nuevos a listos en el instante t
         if len(self.nuevos)>0:
-            #print(f"[{t}] proceso en nuevos {len(self.nuevos)}")
             for p in sorted(self.nuevos,key=lambda x:x.llegada[0]):
                 if p.llegada[0]<=t:
-                    #print(f"Moviendo {p} a listos en {t}")
                     self.listos.append(p)
                     self.nuevos.remove(p)
+
+        #Mueve los procesos bloqueados a listos en el instante t
         if len(self.bloqueados)>0:
-            #print(f"[{t}] proceso en bloqueados {len(self.bloqueados)}")
             for p in sorted(self.bloqueados, key=lambda x:x.llegada[-1]):
                 if p.llegada[-1]<=t:
-                    #print(f"Moviendo {p} a listos en {t}")
                     self.listos.append(p)
                     self.bloqueados.remove(p)
-                
+
+        #Elige el proceso listo que debe ser ejecutado
         if len(self.listos)>0:
-            self.listos.sort(key=lambda x: x.prioridad,reverse=True)
-            #print(f"[{t}] listos:")
-            return self.listos.pop()
+            self.listos.sort(key=lambda x: x.llegada[-1])
+            p: Proceso = self.listos.pop(0)
+            p.ejecutada.append(0)
+            return p
