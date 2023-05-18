@@ -70,8 +70,8 @@ class GUI:
         boton_reiniciar = tk.Button(self.frame_botones, text="Reiniciar", command=self.reiniciar)
         boton_reiniciar.pack()
         #Boton Bloquear
-        boton_bloquear = tk.Button(self.frame_semaforo, text="Bloquear", command=lambda: self.cpu.bloquear(self.t))
-        boton_bloquear.pack()
+        #boton_bloquear = tk.Button(self.frame_semaforo, text="Bloquear", command=lambda: self.cpu.bloquear(self.t))
+        #boton_bloquear.pack()
         #Boton Limpiar
         boton_limpiar = tk.Button(self.frame_botones, text="Limpiar", command=self.limpiar)
         boton_limpiar.pack()
@@ -189,8 +189,6 @@ class GUI:
             self.tabla.insert(parent="", index="end", values=[p.nombre, p.llegada[0], p.rafaga, p.comienzo, p.final, p.retorno, p.espera])
             if self.cpu.cola is p:
                 self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'green')
-            elif self.cpu.dispatcher.nuevos.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'blue')
             elif self.cpu.dispatcher.listos.__contains__(p):
                 self.dibujar_tarea(i, p.nombre, self.t, self.t+1, 'yellow')
             elif self.cpu.dispatcher.bloqueados.__contains__(p):

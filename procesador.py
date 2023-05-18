@@ -37,6 +37,7 @@ class Procesador:
         self.cola = None
 
     def atender(self, tiempo):
+        self.dispatcher.check(tiempo)
         #Si esta ocupado revisa si termino o alcanzo el quantum
         if self.cola is not None:
             self.cola.ejecutada[-1]+=1
