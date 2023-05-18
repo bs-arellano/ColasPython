@@ -8,7 +8,7 @@ class GUI:
     def __init__(self, cpu: Procesador):
         #constantes
         self.width=800
-        self.height=500
+        self.height=450
         self.rows=1
         self.t_range=40
         self.speed=4
@@ -17,7 +17,12 @@ class GUI:
         self.simulaciones = []
         self.simulaciones.append(threading.Thread(target=self.simular))
         self.procesos = []
+        #Ventana principal
         self.root = tk.Tk()
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
+        print(self.screen_width, self.screen_height)
+        self.root.geometry(f"{self.width}x{self.height+215}+{(self.screen_width-self.width)//2}+{((self.screen_height-self.height)//2)-140}")
         self.root.title("Round Robin")
         self.cpu=cpu
         self.crear_elementos()
@@ -79,7 +84,7 @@ class GUI:
     def ventana_datos(self):
         #Ventana emergente
         data_window=tk.Toplevel(master=self.root)
-        data_window.geometry("300x300")
+        data_window.geometry(f"300x300+{(self.screen_width-300)//2}+{(self.screen_height-300)//2}")
         #ID
         tk.Label(data_window, text="Id del nodo").pack()
         id_input=tk.Entry(master=data_window)
@@ -139,14 +144,17 @@ class GUI:
 
     def simular(self):
         self.t=0
+        self.rows=len(self.procesos)
         #Si hay procesos sin finalizar
         while self.cpu.cola!=None or len(self.cpu.dispatcher.nuevos)>0 or len(self.cpu.dispatcher.listos)>0 or len(self.cpu.dispatcher.bloqueados)>0:
             self.cpu.atender(self.t)
             self.actualizar()
             if self.cpu.cola is None:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="green")
+                self.canvas_semaforo.itemconfig(self.label_semaforo, text="")
             else:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="red")
+                self.canvas_semaforo.itemconfig(self.label_semaforo, text=self.cpu.cola.nombre)
             self.canvas_semaforo.update()
             time.sleep(1/self.speed)
             self.t+=1
@@ -178,10 +186,6 @@ class GUI:
         #Borra tabla
         for i in self.tabla.get_children():
             self.tabla.delete(i)
-        #Borra gantt
-        #self.canvas_gantt.delete('all')
-        self.rows=len(self.procesos)
-        #self.dibujar_diagrama()
         #Actualiza
         for i, p in enumerate(self.procesos):
             if len(p.llegada)<=0:
