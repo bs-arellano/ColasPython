@@ -24,10 +24,10 @@ class Dispatcher:
                     self.listos.append(p)
                     self.bloqueados.remove(p)
                     
-    def get(self, t)->Proceso:
+    def get(self)->Proceso:
         #Elige el proceso listo que debe ser ejecutado
         if len(self.listos)>0:
-            self.listos.sort(key=lambda x: x.llegada[-1])
+            self.listos.sort(key=lambda x: x.rafaga-sum(x.ejecutada))
             p: Proceso = self.listos.pop(0)
             p.ejecutada.append(0)
             return p

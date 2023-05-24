@@ -23,7 +23,7 @@ class GUI:
         self.screen_height = self.root.winfo_screenheight()
         #print(self.screen_width, self.screen_height)
         self.root.geometry(f"{self.width}x{self.height+170}+{(self.screen_width-self.width)//2}+{((self.screen_height-self.height)//2)-100}")
-        self.root.title("Round Robin")
+        self.root.title("SRTF")
         self.cpu=cpu
         self.crear_elementos()
         
@@ -119,7 +119,7 @@ class GUI:
     def dibujar_tarea(self, i, nombre, llegada, final, color):
         x0=10+((self.width-20)//self.t_range)*llegada
         x1=10+((self.width-20)//self.t_range)*final
-        y0=(((self.height//4)//self.rows)*(i+1))-10
+        y0=(((self.height//2)//self.rows)*(i+1))-20
         self.canvas_gantt.create_rectangle(x0,y0,x1,y0+20,fill=color)
         self.canvas_gantt.create_text(x0+10, y0+10, text=nombre)
 

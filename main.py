@@ -1,6 +1,6 @@
 from procesador import Procesador
 from gui import GUI
 
-cpu=Procesador(4)
+cpu=Procesador()
 gui=GUI(cpu)
 gui.ejecutar()
