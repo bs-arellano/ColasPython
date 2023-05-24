@@ -21,8 +21,8 @@ class GUI:
         self.root = tk.Tk()
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
-        print(self.screen_width, self.screen_height)
-        self.root.geometry(f"{self.width}x{self.height+215}+{(self.screen_width-self.width)//2}+{((self.screen_height-self.height)//2)-140}")
+        #print(self.screen_width, self.screen_height)
+        self.root.geometry(f"{self.width}x{self.height+170}+{(self.screen_width-self.width)//2}+{((self.screen_height-self.height)//2)-100}")
         self.root.title("Round Robin")
         self.cpu=cpu
         self.crear_elementos()
@@ -58,7 +58,7 @@ class GUI:
         #Semaforo
         self.canvas_semaforo = tk.Canvas(master=self.frame_semaforo, width=100, height=100)
         self.semaforo = self.canvas_semaforo.create_oval(10,10,90,90, fill='green')
-        self.label_semaforo = self.canvas_semaforo.create_text(40, 40, text="")
+        self.label_semaforo = self.canvas_semaforo.create_text(40, 40, text="0")
         self.canvas_semaforo.pack()
         #Gantt
         self.canvas_gantt = tk.Canvas(master=self.frame_gantt, width=self.width, height=self.height//2, background='white')
@@ -66,20 +66,20 @@ class GUI:
         self.canvas_gantt.pack()
         #Boton Agregar
         boton_agregar_nodo = tk.Button(self.frame_botones, text="Agregar nodo", command=self.ventana_datos)
-        boton_agregar_nodo.pack()
+        boton_agregar_nodo.pack(side="left")
         #Boton Simular
         lamda_simular = lambda: self.simulaciones[-1].start() if len(self.procesos)>0 else None
         boton_simular = tk.Button(self.frame_botones, text="Simular", command=lamda_simular)
-        boton_simular.pack()
+        boton_simular.pack(side="left")
         #Boton Reiniciar
         boton_reiniciar = tk.Button(self.frame_botones, text="Reiniciar", command=self.reiniciar)
-        boton_reiniciar.pack()
+        boton_reiniciar.pack(side="left")
         #Boton Bloquear
-        #boton_bloquear = tk.Button(self.frame_semaforo, text="Bloquear", command=lambda: self.cpu.bloquear(self.t))
-        #boton_bloquear.pack()
+        boton_bloquear = tk.Button(self.frame_semaforo, text="Bloquear", command=lambda: self.cpu.bloquear(self.t))
+        boton_bloquear.pack(side="left")
         #Boton Limpiar
         boton_limpiar = tk.Button(self.frame_botones, text="Limpiar", command=self.limpiar)
-        boton_limpiar.pack()
+        boton_limpiar.pack(side="left")
 
     def ventana_datos(self):
         #Ventana emergente
@@ -151,10 +151,10 @@ class GUI:
             self.actualizar()
             if self.cpu.cola is None:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="green")
-                self.canvas_semaforo.itemconfig(self.label_semaforo, text="")
+                self.canvas_semaforo.itemconfig(self.label_semaforo, text=self.t)
             else:
                 self.canvas_semaforo.itemconfig(self.semaforo, fill="red")
-                self.canvas_semaforo.itemconfig(self.label_semaforo, text=self.cpu.cola.nombre)
+                self.canvas_semaforo.itemconfig(self.label_semaforo, text=f"{self.t} {self.cpu.cola.nombre}")
             self.canvas_semaforo.update()
             time.sleep(1/self.speed)
             self.t+=1
@@ -177,6 +177,9 @@ class GUI:
         self.canvas_gantt.delete('all')
         self.rows=1
         self.dibujar_diagrama()
+        #Semaforo
+        self.canvas_semaforo.itemconfig(self.semaforo, fill="green")
+        self.canvas_semaforo.itemconfig(self.label_semaforo, text="0")
         #Termina hilo
         if self.simulaciones[-1].is_alive():
             self.simulaciones[-1].join()

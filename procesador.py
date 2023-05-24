@@ -29,11 +29,11 @@ class Procesador:
     def terminar(self, tiempo):
         if self.cola is None:
             return
-        print(f"[{tiempo}] Terminando {self.cola}")
         self.cola.final=tiempo
         self.cola.retorno=self.cola.final-self.cola.llegada[0]
         self.cola.espera=self.cola.retorno-self.cola.rafaga
         self.dispatcher.terminados.append(self.cola)
+        print(f"[{tiempo}] Terminando {self.cola}")
         self.cola = None
 
     def atender(self, tiempo):
