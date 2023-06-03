@@ -11,7 +11,7 @@ class GUI:
         self.height=450
         self.rows=1
         self.t_range=40
-        self.speed=4
+        self.speed=0.7
         self.t = 0
         #objetos
         self.simulaciones = []
@@ -144,9 +144,10 @@ class GUI:
 
     def simular(self):
         self.t=0
-        self.rows=len(self.procesos)
+        
         #Si hay procesos sin finalizar
         while self.cpu.cola!=None or len(self.cpu.dispatcher.nuevos)>0 or len(self.cpu.dispatcher.listos)>0 or len(self.cpu.dispatcher.bloqueados)>0:
+            self.rows=len(self.procesos)
             self.cpu.atender(self.t)
             self.actualizar()
             if self.cpu.cola is None:

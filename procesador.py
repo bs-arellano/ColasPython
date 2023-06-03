@@ -46,7 +46,8 @@ class Procesador:
         #Revisa si hay un proceso con menor rafaga por ejecutar
         if self.cola is not None and p is not None:
             if p.rafaga-sum(p.ejecutada)< self.cola.rafaga-sum(self.cola.ejecutada):
-                self.dispatcher.listos.append(self.cola)
+                self.expulsar(tiempo)
+                #self.dispatcher.listos.append(self.cola)
                 p.comienzo.append(tiempo)
                 self.cola = p
             else:
