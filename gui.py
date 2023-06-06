@@ -290,28 +290,28 @@ class GUI:
                     self.dibujar_tarea(i, p_log, t_log, t_log+1, c_log)
             #Proceso en seccion critica
             if self.cpu.cola is p:
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#4D96FF')
-                self.registro_gantt.append((p.nombre, self.t, '#4D96FF'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#79B8D1')
+                self.registro_gantt.append((p.nombre, self.t, '#79B8D1'))
             #Proceso en listos
             elif self.cpu.round_robin.listos.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#00DFA2')
-                self.registro_gantt.append((p.nombre, self.t, '#00DFA2'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#A8E4B1')
+                self.registro_gantt.append((p.nombre, self.t, '#A8E4B1'))
             elif self.cpu.srtf.listos.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#00DFA2')
-                self.registro_gantt.append((p.nombre, self.t, '#00DFA2'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#AEF4A4')
+                self.registro_gantt.append((p.nombre, self.t, '#AEF4A4'))
             elif self.cpu.prioridades.listos.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#00DFA2')
-                self.registro_gantt.append((p.nombre, self.t, '#00DFA2'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#6BCB77')
+                self.registro_gantt.append((p.nombre, self.t, '#6BCB77'))
             #Procesos bloqueados
             elif self.cpu.round_robin.bloqueados.__contains__(p):
                 self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#FF0060')
                 self.registro_gantt.append((p.nombre, self.t, '#FF0060'))
             elif self.cpu.srtf.bloqueados.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#FF0060')
-                self.registro_gantt.append((p.nombre, self.t, '#FF0060'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#E36488')
+                self.registro_gantt.append((p.nombre, self.t, '#E36488'))
             elif self.cpu.prioridades.bloqueados.__contains__(p):
-                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#FF0060')
-                self.registro_gantt.append((p.nombre, self.t, '#FF0060'))
+                self.dibujar_tarea(i, p.nombre, self.t, self.t+1, '#FF6B6B')
+                self.registro_gantt.append((p.nombre, self.t, '#FF6B6B'))
 
     def limpiar(self):
         self.procesos = []
