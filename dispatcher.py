@@ -2,13 +2,20 @@ from proceso import Proceso
 
 class Dispatcher:
     def __init__(self):
+        self.nuevos = []
         self.listos = []
         self.bloqueados = []
         self.terminados=[]
         self.t_inanicion = 20
     def add (self, proceso: Proceso):
-        self.listos.append(proceso)
+        self.nuevos.append(proceso)
     def check(self, t) -> list:
+        #Revisa por procesos nuevos
+        if len(self.nuevos)>0:
+            for p in sorted(self.nuevos, key=lambda x: x.llegada[0]):
+                if p.llegada[0]<=t:
+                    self.listos.append(p)
+                    self.nuevos.remove(p)
         #Revisa por procesos bloquados
         if len(self.bloqueados)>0:
             for p in sorted(self.bloqueados, key=lambda x:x.llegada[-1]):
@@ -46,7 +53,7 @@ class DispatcherRR(Dispatcher):
                 p.llegada.append(t)
                 p.ejecutada.append(0)
                 self.listos.append(p)
-                print(f'[{t}] Expulsado {p} en rr')
+                print(f'\033[91m[{t}] Expulsado {p} en rr\033[0m')
         #Elige el proceso por FIFO
         if len(self.listos)>0:
             self.listos.sort(key=lambda x: x.llegada[-1])
@@ -75,11 +82,11 @@ class DispatcherSRTF(Dispatcher):
             p.llegada.append(t)
             p.ejecutada.append(0)
             self.listos.append(p)
-            print(f'[{t}] Expulsado {p} en srtf')
+            print(f'\033[91m[{t}] Expulsado {p} en srtf\033[0m')
             p_alt.comienzo.append(t)
             return p_alt
         else:
-            self.add(p_alt)
+            self.listos.append(p_alt)
             return p
     def __str__(self) -> str:
         return 'srtf'

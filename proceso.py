@@ -1,11 +1,12 @@
 class Proceso:
-    def __init__(self, id, t, r, prioridad=0):
+    def __init__(self, id, t, r, dispatcher, prioridad=0):
         self.nombre=id
         self.llegada=[t]
         self.rafaga=r
         self.prioridad = prioridad
         self.ejecutada=[0]
         self.comienzo=[]
+        self.dispatcher=dispatcher
         self.final="-"
         self.retorno="-"
         self.espera="-"

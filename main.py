@@ -2,7 +2,7 @@ from procesador import Procesador
 from gui import GUI
 from test import Test
 
-dev = True
+dev = False
 
 cpu=Procesador()
 if dev:
