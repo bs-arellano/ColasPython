@@ -28,7 +28,7 @@ class Procesador:
         if self.cola is None:
             return
         self.cola.llegada.append(tiempo)
-        dispatcher.add(self.cola)
+        dispatcher.listos.append(self.cola)
         print(f'\033[91m[{tiempo}] Expulsado {self.cola} en {dispatcher} \033[0m')
         self.cola=None
 
@@ -46,13 +46,15 @@ class Procesador:
     def atender(self, tiempo):
         #Actualiza cola de listos
         for p in self.round_robin.check(tiempo):
-            self.round_robin.add(p)
+            self.round_robin.listos.append(p)
         for p in self.srtf.check(tiempo):
             p.llegada.append(tiempo)
+            p.dispatcher='Round Robin'
             self.round_robin.listos.append(p)
             print(f'\033[93m[{tiempo}] Moviendo {p.nombre} por inanicion en rr \033[0m')
         for p in self.prioridades.check(tiempo):
             p.llegada.append(tiempo)
+            p.dispatcher='SRTF'
             self.srtf.listos.append(p)
             print(f'\033[93m[{tiempo}] Moviendo {p.nombre} por inanicion en prioridades \033[0m')
         #Si el proceso finaliza lo mueve a terminados
