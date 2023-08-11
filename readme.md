@@ -42,6 +42,3 @@ If you would like to contribute to the Colas Python project, you can do so by fo
 
 ## License
 The Colas Python project is released under the MIT License.
-
-## Contact
-If you have any questions about the Colas Python project, you can contact me at brayanarellano1605@gmail.com.
